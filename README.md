@@ -1,1 +1,1 @@
-ECHO est  ativado.
+Repositório para aprendizado inicial da lib loguru

@@ -11,7 +11,7 @@ import psutil
 from typing import Callable, Any
 
 
-def log_function_info(log_env: bool = False) -> Callable:
+def log_function_info(log_env: bool = False, log_level: str = "WARNING") -> Callable:
     """
     Decorator to log some information about the execution of a function.
 
@@ -42,6 +42,9 @@ def log_function_info(log_env: bool = False) -> Callable:
             Returns:
                 Any: Result of the target function.
             """
+
+            logger.add(sys.stdout, serialize=True, backtrace=True,
+                       catch=True, level=log_level)
 
             start_time = time.time()
             initial_timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -75,7 +78,6 @@ def log_function_info(log_env: bool = False) -> Callable:
 
                 log_data = {
                     "function_name": func.__name__,
-                    "script_name": __file__,
                     "initial_timestamp": initial_timestamp,
                     "final_timestamp": final_timestamp,
                     "elapsed_time": elapsed_time,
@@ -85,6 +87,7 @@ def log_function_info(log_env: bool = False) -> Callable:
                 }
 
                 if log_env:
+                    log_data["script_name"] = __file__
                     log_data["environment_info"] = environment_info
 
                 logger.info(json.dumps(log_data, indent=4))

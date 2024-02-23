@@ -10,54 +10,58 @@ import platform
 import psutil
 
 
-def log_function_info(func):
-    def wrapper(*args, **kwargs):
+def log_function_info(log_env=False):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
 
-        start_time = time.time()
-        initial_timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-        exception_info = None
+            start_time = time.time()
+            initial_timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+            exception_info = None
 
-        initial_memory = round(
-            float(psutil.virtual_memory().used) / (1024.0 ** 2))
-
-        try:
-            result = func(*args, **kwargs)
-            return result
-        except Exception as e:
-            exception_info = {
-                "exception_type": type(e).__name__,
-                "exception_message": str(e),
-                "traceback": traceback.format_exc()
-            }
-            raise e
-        finally:
-            end_time = time.time()
-            final_timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-            elapsed_time = round(end_time - start_time, 4)
-
-            final_memory = round(
+            initial_memory = round(
                 float(psutil.virtual_memory().used) / (1024.0 ** 2))
 
-            environment_info = {
-                "python_version": sys.version,
-                "operating_system": platform.system(),
-            }
+            try:
+                result = func(*args, **kwargs)
+                return result
+            except Exception as e:
+                exception_info = {
+                    "exception_type": type(e).__name__,
+                    "exception_message": str(e),
+                    "traceback": traceback.format_exc()
+                }
+                raise e
+            finally:
+                end_time = time.time()
+                final_timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+                elapsed_time = round(end_time - start_time, 4)
 
-            log_data = {
-                "function_name": func.__name__,
-                "script_name": __file__,
-                "initial_timestamp": initial_timestamp,
-                "final_timestamp": final_timestamp,
-                "elapsed_time": elapsed_time,
-                "exceptions": exception_info,
-                "initial_memory_usage": initial_memory,
-                "final_memory_usage": final_memory,
-                "environment_info": environment_info,
-            }
+                final_memory = round(
+                    float(psutil.virtual_memory().used) / (1024.0 ** 2))
 
-            logger.info(json.dumps(log_data, indent=4))
+                environment_info = {
+                    "python_version": sys.version,
+                    "operating_system": platform.system(),
+                }
 
-    return wrapper
+                log_data = {
+                    "function_name": func.__name__,
+                    "script_name": __file__,
+                    "initial_timestamp": initial_timestamp,
+                    "final_timestamp": final_timestamp,
+                    "elapsed_time": elapsed_time,
+                    "exceptions": exception_info,
+                    "initial_memory_usage": initial_memory,
+                }
+
+                if log_env:
+                    log_data["final_memory_usage"] = final_memory
+                    log_data["environment_info"] = environment_info
+
+                logger.info(json.dumps(log_data, indent=4))
+
+        return wrapper
+    return decorator
 
 
 @logger.catch('ERROR')
@@ -74,7 +78,7 @@ def generate_fake_email() -> str:
     return faker
 
 
-@log_function_info
+@log_function_info()
 def generate_fake_df(num_rows: int) -> pd.DataFrame:
     """
     Function to generate a mocked DataFrame with pre defined columns and random values.
@@ -111,15 +115,13 @@ def generate_fake_df(num_rows: int) -> pd.DataFrame:
         data['email_column'] = [generate_fake_email()
                                 for _ in range(num_rows)]
 
-        logger.success(f"Function finalizada")
-
         return pd.DataFrame(data)
 
     except Exception as e:
         raise (e)
 
 
-@log_function_info
+@log_function_info(log_env=True)
 def main():
 
     np.random.seed(42)
@@ -129,6 +131,10 @@ def main():
 
 if __name__ == '__main__':
 
+    logger.info(
+        f"""Initiating execution at {time.strftime('%Y-%m-%d %H:%M:%S')}""")
+
     main()
 
-    logger.success("Successfully terminated")
+    logger.success(
+        f"""Successfully terminated at {time.strftime('%Y-%m-%d %H:%M:%S')}""")

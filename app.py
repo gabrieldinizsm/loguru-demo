@@ -53,6 +53,8 @@ def generate_fake_df(num_rows: int) -> pd.DataFrame:
         data['email_column'] = [generate_fake_email()
                                 for _ in range(num_rows)]
 
+        logger.success("Successfully terminated")
+
         return pd.DataFrame(data)
 
     except Exception as e:
@@ -61,8 +63,13 @@ def generate_fake_df(num_rows: int) -> pd.DataFrame:
 
 if __name__ == '__main__':
 
+    logger.add(
+        sys.stderr, format="{time} {level} {message}", level="DEBUG", serialize=True)
+
     np.random.seed(42)
 
     df = generate_fake_df(100)
 
     print(df.head())
+
+    logger.success("Successfully terminated")

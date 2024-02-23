@@ -8,11 +8,40 @@ import time
 import traceback
 import platform
 import psutil
+from typing import Callable, Any
 
 
-def log_function_info(log_env=False):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
+def log_function_info(log_env: bool = False) -> Callable:
+    """
+    Decorator to log some information about the execution of a function.
+
+    Args:
+        log_memory (bool): If True, log memory usage before and after function execution.
+
+    Returns:
+        Callable: Decorator function.
+    """
+    def decorator(func: Callable) -> Callable:
+        """
+        Wrapper function for the decorator.
+
+        Args:
+            func(Callable): The target function to be decorated.
+
+        Returns:
+            Callable: Wrapper function.
+        """
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            """
+            Execute the decorated function, log relevant information, and handle exceptions.
+
+            Args:
+                *args(Any): Positional arguments passed to the target function.
+                **kwargs(Any): Keyword arguments passed to the target function.
+
+            Returns:
+                Any: Result of the target function.
+            """
 
             start_time = time.time()
             initial_timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -52,10 +81,10 @@ def log_function_info(log_env=False):
                     "elapsed_time": elapsed_time,
                     "exceptions": exception_info,
                     "initial_memory_usage": initial_memory,
+                    "final_memory_usage": final_memory
                 }
 
                 if log_env:
-                    log_data["final_memory_usage"] = final_memory
                     log_data["environment_info"] = environment_info
 
                 logger.info(json.dumps(log_data, indent=4))

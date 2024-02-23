@@ -1,19 +1,15 @@
 from loguru import logger
 import sys
+from faker import Faker
 
-# Log levels ordenados por severidade e verbosidade crescente
-logger.trace("A trace message.")
-logger.debug("A debug message.")
-logger.info("An info message.")
-logger.success("A success message.")
-logger.warning("A warning message.")
-logger.error("An error message.")
-logger.critical("A critical message.")
 
-# Criando um novo handler e colocando o log level padrão para INFO
-logger.remove(0)
-logger.add(sys.stderr, level="INFO")
+def generate_fake_email() -> str:
+    """ 
+    Function to generate some fake emails.
 
-# Criando um custom log level
-logger.level("FATAL", no=60, color="<red>", icon="!!!")
-logger.log("FATAL", "A user updated some information.")
+    Returns:
+        str: A fake email.
+    """
+    fake = Faker()
+    faker = fake.email()
+    return faker
